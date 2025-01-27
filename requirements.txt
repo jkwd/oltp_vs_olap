@@ -1,0 +1,7 @@
+duckdb
+SQLAlchemy
+psycopg2-binary
+pandas
+pyarrow
+fastparquet
+matplotlib
