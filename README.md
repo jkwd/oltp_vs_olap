@@ -27,6 +27,45 @@ The OLTP database we are using for the experiment is a Postgres database. The OL
 ## Hypothesis
 The hypothesis is that the OLTP database will perform better for transactional operations such as INSERT/UPDATE/DELETE while the OLAP database will perform better for the business-oriented ad hoc query.
 
+### Row oriented storage
+In a row-oriented storage, each row in a table is stored sequentially on the disk.
+
+| id | Name | Country |
+| -- | ---- | ------- |
+| 1 | Alice | USA |
+| 2 | Bob | Germany |
+| 3 | Charlie | Australia |
+| 4 | David | Japan |
+
+Given the example table above, a row oriented storage will be stored as:
+
+1 Alice USA | 2 Bob Germany | 3 Charlie   Australia | 4 David Japan |
+
+Each `|` represents the end of a block and each row in the table is stored within the block.
+
+This makes the row oriented storage good for transactional use cases where if you need to update Bob's Country from Germany to Italy, you can look for the specific block and update the value.
+
+However, analytics queries will be poor as the column we need will be spread across the blocks.
+E.g. If we want to know the number of people in each country, we technically only need the `Country` column to count. This results in a full table scan just to get the results we want.
+
+### Column oriented storage
+In a column-oriented storage, each row in a table is stored sequentially on the disk.
+
+| id | Name | Country |
+| -- | ---- | ------- |
+| 1 | Alice | USA |
+| 2 | Bob | Germany |
+| 3 | Charlie | Australia |
+| 4 | David | Japan |
+
+Given the example table above, a column oriented storage will be stored as:
+
+1 2 3 4 | Alice Bob Charlie David | USA Germany Australia Japan |
+
+This makes an column oriented storage good for analytical queries. Going back to the previous example on wanting to know the number of people in each country, we just need to read 1 block of data which is the `Country` block and do our counting from there. Much lesser data is scanned and returned for the query.
+
+On the other hand, column oriented storage is poor for transactional processing which usually does an operation on 1 row. For example, if you wanted to add a row of data, each value from the new row has to be added to the correct block of the existing database. This requires accessing all the blocks. Column oriented storage will prefer doing operations in bulk (e.g. bulk insert/update).
+
 ## Result
 ### Query performance
 ![](./img/query_time.png)
