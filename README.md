@@ -10,6 +10,7 @@
 ```
 git clone https://github.com/jkwd/oltp_vs_olap.git
 cd oltp_vs_olap
+docker compose version
 docker compose up
 ```
 
